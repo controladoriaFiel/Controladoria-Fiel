@@ -1,0 +1,31 @@
+sequenceDiagram
+  actor Operador
+  participant Form as Formulario e modal
+  participant API as API tRPC ou REST
+  participant DB as MySQL InnoDB
+  Operador->>Form: Replicar Saida
+  Operador->>Form: Datas avulsas ou intervalo e weekdays
+  Form->>API: Previa, fonte ID e versao ou modelo de formulario
+  API->>DB: Ler original e escalas do periodo
+  API->>API: Validar campos, duplicidade e sobreposicoes
+  API-->>Form: Datas livres, conflitos, snapshot e digest
+  Operador->>Form: Tudo-ou-nada ou somente datas livres
+  Form->>API: Confirmacao com digest e requestId
+  API->>DB: BEGIN, lock compartilhado com CRUD
+  API->>DB: Consultar requestId
+  alt Lote ja confirmado com mesmo ator e payload
+    DB-->>API: Resultado e IDs persistidos
+    API-->>Form: Repeticao segura, nenhuma copia nova
+  else Primeira confirmacao
+    API->>DB: Reler fonte, versao e disponibilidade
+    alt Previa mudou
+      API-->>Form: Exigir revisao, nenhuma replica
+    else Previa valida e politica atendida
+      API->>DB: INSERT copias com IDs e chaves proprios
+      API->>DB: INSERT auditoria e resultado idempotente
+      API->>DB: COMMIT
+      API-->>Form: Quantidade, IDs e datas ignoradas
+    end
+  end
+  Note over DB: Falha durante o lote reverte todas as insercoes
+  Note over Form,DB: Nenhuma mutacao do registro original

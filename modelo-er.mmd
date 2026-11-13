@@ -1,0 +1,54 @@
+erDiagram
+  users ||--o{ schedules : cria
+  users ||--o{ auditLogs : executa
+  users ||--o{ replicationBatches : confirma
+  users {
+    int id PK
+    varchar openId UK
+    text name
+    varchar email
+    enum role "user=Consulta / operator / admin"
+    boolean accessGranted "liberacao por Admin"
+    varchar loginMethod
+    timestamp createdAt
+    timestamp updatedAt
+    timestamp lastSignedIn
+  }
+  schedules {
+    int id PK
+    varchar date "AAAA-MM-DD"
+    varchar route
+    varchar vehicle
+    varchar driver
+    varchar departureTime "HH:MM"
+    varchar arrivalTime "HH:MM ou vazio"
+    enum status "scheduled/running/completed/late; null=legado nao classificado"
+    varchar programmingKey UK "SHA256 identidade, null no legado"
+    varchar requester
+    varchar origin
+    varchar destination
+    text notes
+    varchar departedAt "instante ISO UTC ou null"
+    int createdBy FK
+    int version "concorrencia otimista"
+    timestamp createdAt
+    timestamp updatedAt
+  }
+  auditLogs {
+    int id PK
+    int actorId FK
+    int entityId "ID historico sem FK"
+    varchar action
+    text payload "snapshot JSON"
+    timestamp createdAt
+  }
+  replicationBatches {
+    varchar requestId PK "UUID de idempotencia"
+    int actorId FK
+    varchar payloadHash "SHA256 da confirmacao"
+    mediumtext result "resultado JSON e IDs"
+    timestamp createdAt
+  }
+  scheduleWriteLocks {
+    int id PK "singleton 1, lock InnoDB durante escrita"
+  }

@@ -1,0 +1,23 @@
+flowchart LR
+  U[Desktop e celular] --> G[Entrada corporativa\nfielturismo.com.br e admissão]
+  G --> UI[React + Vite\nTailwind e shadcn]
+  UI --> F[React Hook Form]
+  F --> Z[Zod compartilhado]
+  UI --> Q[TanStack Query / tRPC]
+  Q --> API[Node.js / Express]
+  R[Clientes REST / Swagger] --> API
+  API --> A[JWT + domínio + RBAC\nidentidade atual do provedor]
+  A --> S[Serviços transacionais]
+  Z --> API
+  S --> ORM[Drizzle ORM]
+  ORM --> DB[(MySQL gerenciado\nusers / schedules / auditLogs)]
+  UI --> O[OAuth Manus]
+  O --> A
+  UI --> AL[Motor de alertas\nlaranja / vermelho / roxo]
+  AL --> N[Notification API\napp aberto]
+  UI --> EX[Exportação local\nPDF / XLSX]
+  UI --> SW[Service worker\nshell e assets]
+  UI --> LC[Cache por usuário\nconsulta offline]
+  UI --> DEMO[Demonstração fictícia\ncorporativo admitido e isolado]
+  classDef main fill:#e9f4ee,stroke:#16735a,color:#244835;
+  class UI,API,S,ORM main;

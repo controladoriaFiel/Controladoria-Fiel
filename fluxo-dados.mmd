@@ -1,0 +1,35 @@
+sequenceDiagram
+  actor Pessoa
+  participant UI as React/PWA
+  participant OAuth as OAuth Manus
+  participant API as Express/tRPC
+  participant Z as Zod/RBAC
+  participant DB as MySQL
+  Pessoa->>UI: Entrar com conta Manus corporativa
+  UI->>OAuth: Autorizar (state + nonce)
+  OAuth->>API: Callback com code + state
+  API->>API: Verificar nonce e trocar code
+  API->>OAuth: Consultar identidade do token
+  API->>API: Exigir domínio fielturismo.com.br
+  API->>DB: Resolver identidade e perfil
+  API-->>UI: Sessão JWT HttpOnly
+  Pessoa->>UI: Preencher escala e escolher status manual
+  UI->>UI: Validar campos no formulário
+  UI->>API: Criar/editar + sessão + versão
+  API->>OAuth: Revalidar identidade atual
+  API->>Z: Exigir domínio, admissão, perfil e campos
+  Z->>DB: Transação de escala + auditoria
+  DB-->>API: Commit / conflito
+  API-->>UI: Resultado tipado
+  UI->>API: Atualizar listagem
+  API-->>UI: Escalas persistidas
+  UI->>UI: Cache local segregado por usuário
+  loop Aplicação aberta, a cada 10 segundos
+    UI->>UI: Calcular diferença até saída (UTC-3)
+    UI-->>Pessoa: Alertas 60m laranja / 30m vermelho / atraso roxo
+    Note over UI: Alertas nunca mudam o status persistido
+  end
+  Pessoa->>UI: Confirmar saída (escolhe Em rota) / editar status e chegada
+  UI->>API: Mutação autorizada
+  API->>DB: Persistir escolha humana + auditoria
+  API-->>UI: Atualizar status, Em rota/Concluída encerram alertas
